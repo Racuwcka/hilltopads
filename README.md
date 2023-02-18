@@ -1,5 +1,11 @@
 # Класс для работы с лейблами.
 
+/app/Http/Controllers/Label/LabelController.php
+
+### Доступный пример файла для работы с классом
+
+/app/Http/Controllers/Label/IndexController.php
+
 ## **Пример использования класса**:
 
 ```php
@@ -22,4 +28,10 @@ $result = $label->delete($site, 2, ['label2', 'label3']);
 $user = new User();
 $label = new LabelController();
 $result = $label->read($user, 2);
+```
+
+## Для запуска миграций используйте Artisan-команду migrate
+
+```bash
+php artisan migrate
 ```
