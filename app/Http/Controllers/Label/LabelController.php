@@ -8,6 +8,7 @@ use App\Models\Label;
 use App\Models\Site;
 use App\Models\User;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class LabelController extends Controller
 {
@@ -17,16 +18,22 @@ class LabelController extends Controller
      */
     public function rewrite($type, $id, array $data = []): string
     {
-        $this->checkTypeAndId($type, $id);
+        try {
+            DB::beginTransaction();
+            $this->checkTypeAndId($type, $id);
 
-        $labels = $this->findLabels($data);
+            $labels = $this->findLabels($data);
 
-        if (isset($labels)) {
-            $type::find($id)->labels()->sync($labels);
-        } else {
-            $type::find($id)->labels()->detach();
+            if (isset($labels)) {
+                $type::find($id)->labels()->sync($labels);
+            } else {
+                $type::find($id)->labels()->detach();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            die($e->getMessage());
         }
-
         return 'Лейблы перезаписаны.';
     }
 
@@ -36,14 +43,20 @@ class LabelController extends Controller
      */
     public function add($type, $id, array $data): string
     {
-        $this->checkTypeAndId($type, $id);
+        try {
+            DB::beginTransaction();
+            $this->checkTypeAndId($type, $id);
 
-        if (!isset($data)) throw new Exception('Нельзя передавать пустой массив labels.');
+            if (!isset($data)) throw new Exception('Нельзя передавать пустой массив labels.');
 
-        $labels = $this->findLabels($data);
+            $labels = $this->findLabels($data);
 
-        $type::find($id)->labels()->syncWithoutDetaching($labels);
-
+            $type::find($id)->labels()->syncWithoutDetaching($labels);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            die($e->getMessage());
+        }
         return 'Лейблы добавлены.';
     }
 
@@ -53,16 +66,22 @@ class LabelController extends Controller
      */
     public function delete($type, $id, array $data): string
     {
-        $this->checkTypeAndId($type, $id);
+        try {
+            DB::beginTransaction();
+            $this->checkTypeAndId($type, $id);
 
-        if (!isset($data)) throw new Exception('Нельзя передавать пустой массив labels.');
+            if (!isset($data)) throw new Exception('Нельзя передавать пустой массив labels.');
 
-        $labels = $this->findLabels($data);
+            $labels = $this->findLabels($data);
 
-        foreach ($labels as $labelId) {
-            $type::find($id)->labels()->detach($labelId);
+            foreach ($labels as $labelId) {
+                $type::find($id)->labels()->detach($labelId);
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            die($e->getMessage());
         }
-
         return 'Лейблы удалены.';
     }
 
@@ -72,8 +91,11 @@ class LabelController extends Controller
      */
     public function read($type, $id)
     {
-        $this->checkTypeAndId($type, $id);
-
+        try {
+            $this->checkTypeAndId($type, $id);
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
         return $type::find($id)->labels;
     }
 
@@ -98,7 +120,7 @@ class LabelController extends Controller
     private function findLabels($data): array
     {
         $labels = [];
-        foreach($data as $item) {
+        foreach ($data as $item) {
             $label = Label::query()->where('title', $item)->first();
             if ($label === null) {
                 throw new Exception('Labels \'' . $item . '\' не найден.');

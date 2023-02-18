@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Label;
 
 use App\Http\Controllers\Controller;
-use App\Models\Company;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
 class IndexController extends Controller
 {
@@ -13,17 +11,9 @@ class IndexController extends Controller
     {
         $type = new User();
         $id = 1;
-        $labels = ['label3', 'label4'];
+        $labels = ['label2', 'label1'];
 
-        try {
-            DB::beginTransaction();
-            $label = new LabelController();
-            $result = $label->read($type, $id);
-            DB::commit();
-        } catch(\Exception $e) {
-            DB::rollBack();
-            die($e->getMessage());
-        }
-        return $result;
+        $label = new LabelController();
+        return $label->add($type, $id, $labels);
     }
 }
