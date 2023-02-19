@@ -2,6 +2,9 @@
 
 /app/Http/Controllers/Label/LabelController.php
 
+Лейбл представляет собой текстовую строку (например: label1) которая может
+устанавливаться на трёх видах сущностей: пользователи, кампании или сайте.
+
 ### Доступный пример файла для работы с классом
 
 /app/Http/Controllers/Label/IndexController.php
